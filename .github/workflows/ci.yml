@@ -1,0 +1,49 @@
+name: Android CI
+
+# When should this workflow run?
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your code onto the GitHub server
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Java (Android builds need it)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # Step 3: Give permission to run Gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Step 4: Create a local.properties with fake keys
+      # (your build.gradle.kts requires API_KEY and USER_AGENT)
+      - name: Create local.properties
+        run: |
+          echo "API_KEY=fake_ci_key" >> local.properties
+          echo "USER_AGENT=fake_user_agent" >> local.properties
+
+      # Step 5: Run the unit tests
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+      # Step 6: Upload test results so you can read them on GitHub
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()   # run this even if tests fail, so you can see the report
+        with:
+          name: test-results
+          path: app/build/reports/tests/
