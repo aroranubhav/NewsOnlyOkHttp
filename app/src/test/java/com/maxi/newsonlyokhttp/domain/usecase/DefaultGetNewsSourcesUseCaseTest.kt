@@ -99,24 +99,3 @@ class DefaultGetNewsSourcesUseCaseTest {
         }
     }
 }
-/**
- * mockk() creates a fake NewsSourcesRepository. It looks real to the use case but you control what it returns. Your use case doesn't know the difference.
- * runTest is a special coroutine test runner from kotlinx-coroutines-test. Since your flow runs in coroutines, you need this instead of plain @Test.
- * every { ... } returns ... is how you tell the mock what to return when a specific function is called. Think of it as "when this is called, respond with this."
- * .test { } from Turbine is a helper that lets you collect flow emissions one at a time with awaitItem(). Without Turbine, testing flows would be much more verbose.
- * assertThat(...).isEqualTo(...) is Google Truth's assertion style. It reads like plain English and gives much better error messages than plain JUnit assertions.
- * verify { ... } checks that a mock function was actually called — and with what arguments. This is how we confirm forceRefresh is really being passed through.
- *
- * awaitItem() vs awaitComplete()
- * Think of a Flow like a conveyor belt at a factory. Items come out one by one, and at some point the belt stops — meaning there's nothing more to send.
- * awaitItem() reaches out and grabs the next item coming off that conveyor belt. It waits (suspends) until something arrives, then hands it to you so you can inspect it.
- * If you call awaitItem() but nothing ever arrives, Turbine will fail the test with a timeout — which is actually helpful because it means your flow isn't emitting when you expected it to.
- * awaitComplete() waits for the conveyor belt to stop completely.
- * A flow completes when it has nothing more to emit. In our tests, flowOf(Resource.Loading) emits exactly one item and then finishes,
- * so after we grab that one item with awaitItem(), we call awaitComplete() to confirm the flow actually ended cleanly and didn't hang open unexpectedly.
- * The reason you need both together is important: if you only called awaitItem() and returned,
- * Turbine wouldn't know if the flow was done or if there were more uncollected emissions. awaitComplete() is your way of saying
- * "I've collected everything I expected, and I'm also confirming the flow closed properly." If there were a second unexpected emission,
- * awaitComplete() would catch that and fail the test — which protects you from flows that emit more than they should.
- * A quick way to remember the distinction: awaitItem() is about what came through, and awaitComplete() is about the belt stopping. You always want to verify both.
- */
